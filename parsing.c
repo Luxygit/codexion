@@ -6,13 +6,13 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/21 13:47:59 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/21 19:43:21 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-int	ft_atoi_safe(char *str)
+long long	ft_atoi_safe(char *str)
 {
 	long long	res;
 	int			i;
@@ -67,12 +67,12 @@ int	parse_args(t_box *box, int ac, char **av)
 {
 	if (!validate_args(ac, av))
 		return (0);
-	box.rules.num_coders = ft_atoi_safe(av[1]);
-	box.rules.time_to_burnout = ft_atoi_safe(av[2]);
-	box.rules.time_to_compile = ft_atoi_safe(av[3]);
-	box.rules.time_to_debug = ft_atoi_safe(av[4]);
-	box.rules.time_to_refactor = ft_atoi_safe(av[5]);
-	box.rules.num_compiles_required = ft_atoi_safe(av[6]);
-	box.rules.dongle_cooldown = ft_atoi_safe(av[7]);
+	box->rules.num_coders = ft_atoi_safe(av[1]);
+	box->rules.time_to_burnout = ft_atoi_safe(av[2]);
+	box->rules.time_to_compile = ft_atoi_safe(av[3]);
+	box->rules.time_to_debug = ft_atoi_safe(av[4]);
+	box->rules.time_to_refactor = ft_atoi_safe(av[5]);
+	box->rules.num_compiles_required = ft_atoi_safe(av[6]);
+	box->rules.dongle_cooldown = ft_atoi_safe(av[7]);
 	return (1);
 }
