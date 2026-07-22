@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/21 19:43:21 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:16:42 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,5 +74,7 @@ int	parse_args(t_box *box, int ac, char **av)
 	box->rules.time_to_refactor = ft_atoi_safe(av[5]);
 	box->rules.num_compiles_required = ft_atoi_safe(av[6]);
 	box->rules.dongle_cooldown = ft_atoi_safe(av[7]);
+	if (strcmp(av[8], "edf") == 0)
+		box->rules.is_edf = 1;
 	return (1);
 }

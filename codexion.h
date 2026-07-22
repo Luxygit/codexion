@@ -30,6 +30,7 @@ typedef struct s_rules
 	int		time_to_refactor;
 	int		num_compiles_required;
 	int		dongle_cooldown;
+	int		is_edf;
 }	t_rules;
 
 typedef struct s_dongle
@@ -74,5 +75,11 @@ int			check_sim_status(tbox *box);
 int			is_dongle_cooling(t_dongle *dongle);
 int			try_get_dongle(t_dongle *dongle);
 int			start_sim(t_box *box);
+void		enqueue_coder(t_dongle *dongle, int coder_id, t_box *box);
+void		dequeue_coder(t_dongle *dongle);
+void		coder_compile(t_coder *coder);
+void		coder_debug(t_coder *coder);
+void		coder_refactor(t_coder *coder);
+int			take_both_dongles(t_coder *coder);
 
 #endif

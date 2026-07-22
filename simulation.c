@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/21 19:54:48 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:29:11 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,31 +22,36 @@ int	is_dongle_cooling(t_dongle *dongle)
 	return (0);
 }
 
-void	coder_think(t_coder *coder)
-{
-	print_status(coder, "is thinking");
-}
-
 void	*coder_routine(void *arg)
 {
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
 	coder->last_compile_time = get_time();
-	while (1)
+	while (!check_sim_status(coder->box))
 	{
 		if (coder->comp_count == coder->rules->num_compiles_required)
 			break ;
+		coder_think(coder);
+		while (!check_sim_status(coder->box))
+		{
+			if (take_both_dongles(coder))
+				break ;
+			usleep(1000);
+		}
+		if (check_sim_status(coder->box))
+			break ;
+		coder_compile(coder);
+		coder_debug(coder);
+		coder_refactor(coder);
 	}
-	pthread_mutex_lock(&coder->rules->print_lock);
-	printf("Hello from coder %d\n", coder->id);
-	pthread_mutex_unlock(&coder->rules->print_lock);
 	return (NULL);
 }
 
 int	start_sim(t_box *box)
 {
-	int		i;
+	int			i;
+	pthread_t	monitor;
 
 	i = 0;
 	while (i < box->rules.num_coders)
@@ -54,12 +59,14 @@ int	start_sim(t_box *box)
 		pthread_create(&box->threads[i], NULL, coder_routine, &box->coders[i]);
 		i++;
 	}
+	pthread_create(&monitor, NULL, burnout_monitor, box);
 	i = 0;
-	while (i < box->rules.mum_coders)
+	while (i < box->rules.num_coders)
 	{
 		pthread_join(box->threads[i], NULL);
 		i++;
 	}
+	pthread_join(monitor, NULL);
 	return (0);
 }
 
@@ -74,4 +81,31 @@ int	try_get_dongle(t_dongle *dongle)
 	dongle->in_use = 1;
 	pthread_mutex_unlock(&dongle->lock);
 	return (1);
+}
+
+void	*burnout_monitor(void *arg)
+{
+	t_box	*box;
+	int		i;
+
+	box = (t_box *)arg;
+	while (!check_sim_status(box))
+	{
+		i = 0;
+		while (i < box->rules.num_coders)
+		{
+			if (get_time() - box->coders[i].last_compile_time
+				> box->rules.time_to_burnout)
+			{
+				pthread_mutex_lock(&box->stop_lock);
+				box->sim_stopped = 1;
+				pthread_mutex_unlock(&box->stop_lock);
+				print_status(&box->coders[i], "burned out");
+				return (NULL);
+			}
+			i++;
+		}
+		usleep(1000);
+	}
+	return (NULL);
 }

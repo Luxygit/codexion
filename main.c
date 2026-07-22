@@ -6,11 +6,28 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/21 19:47:36 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:28:51 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+static void	free_all(t_box *box)
+{
+	int		i;
+
+	i = 0;
+	while (i < box->rules.num_coders)
+	{
+		pthread_mutex_destroy(&box->dongles[i].lock);
+		i++;
+	}
+	pthread_mutex_destroy(&box->print_lock);
+	pthread_mutex_destroy(&box->stop_lock);
+	free(box->dongles);
+	free(box->coders);
+	free(box->threads);
+}
 
 int	main(int ac, char **av)
 {
@@ -32,8 +49,6 @@ int	main(int ac, char **av)
 	init_data(&box);
 	start_sim(&box);
 	printf("All parsed and initialised\n");
-	free(box.coders);
-	free(box.dongles);
-	free(box.threads);
+	free_all(&box);
 	return (0);
 }
