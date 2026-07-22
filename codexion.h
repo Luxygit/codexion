@@ -70,16 +70,19 @@ int			parse_args(t_box *box, int ac, char **av);
 int			init_data(t_box *box);
 int			start_sim(t_box *box);
 long long	get_time(void);
-void		ft_usleep(long long milliseconds, tbox *box);
-int			check_sim_status(tbox *box);
+void		print_status(t_coder *coder, char *status_msg);
+void		ft_usleep(long long milliseconds, t_box *box);
+int			check_sim_status(t_box *box);
 int			is_dongle_cooling(t_dongle *dongle);
 int			try_get_dongle(t_dongle *dongle);
 int			start_sim(t_box *box);
 void		enqueue_coder(t_dongle *dongle, int coder_id, t_box *box);
 void		dequeue_coder(t_dongle *dongle);
 void		coder_compile(t_coder *coder);
+void		coder_think(t_coder *coder);
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
 int			take_both_dongles(t_coder *coder);
+void		*burnout_monitor(void *arg);
 
 #endif
