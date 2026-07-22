@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 13:39:06 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 14:59:49 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@ static void	sort_queue_edf(t_dongle *dongle, t_box *box)
 		return ;
 	id_a = dongle->waiting_queue[0];
 	id_b = dongle->waiting_queue[1];
+	if (id_a <= 0 || id_b <= 0 || id_a > box->rules.num_coders
+		|| id_b > box->rules.num_coders)
+		return ;
 	deadline_a = box->coders[id_a - 1].last_compile_time
 		+ box->rules.time_to_burnout;
 	deadline_b = box->coders[id_b - 1].last_compile_time

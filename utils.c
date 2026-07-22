@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 13:41:52 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 15:13:13 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,15 +51,29 @@ int	check_sim_status(t_box *box)
 
 void	print_status(t_coder *coder, char *status_msg)
 {
-	long long	timestamp;
+	long long	relative_time;
 	t_box		*box;
 
-	box = (t_box *)coder->l_dongle;
+	box = coder->box;
 	pthread_mutex_lock(&box->print_lock);
-	if (!box->sim_stopped)
+	if (!check_sim_status(box))
 	{
-		timestamp = get_time();
-		printf("%lld %d %s/n", timestamp, coder->id, status_msg);
+		relative_time = get_time() - box->start_time;
+		printf("%lld %d %s\n", relative_time, coder->id, status_msg);
 	}
 	pthread_mutex_unlock(&box->print_lock);
+}
+
+int	all_coders_finished(t_box *box)
+{
+	int	i;
+
+	i = 0;
+	while (i < box->rules.num_coders)
+	{
+		if (box->coders[i].comp_count < box->rules.num_compiles_required)
+			return (0);
+		i++;
+	}
+	return (1);
 }

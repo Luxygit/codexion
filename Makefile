@@ -6,14 +6,14 @@
 #    By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/07/21 14:29:56 by dievarga          #+#    #+#              #
-#    Updated: 2026/07/22 12:54:27 by dievarga         ###   ########.fr        #
+#    Updated: 2026/07/22 14:37:55 by dievarga         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	codexion
 CC		=	cc
 CFLAGS	=	-Wall -Werror -Wextra
-SRCS	=	main.c parsing.c init.c simulation.c queue.c actions.c arbitration.c utils.c
+SRCS	=	main.c parsing.c simulation.c queue.c actions.c arbitration.c utils.c
 OBJS	=	$(SRCS:.c=.o)
 HEADER	=	codexion.h
 

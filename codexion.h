@@ -13,7 +13,6 @@
 #ifndef CODEXION_H
 # define CODEXION_H
 
-# include <time.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <string.h>
@@ -46,7 +45,7 @@ typedef struct s_coder
 {
 	int				id;
 	int				comp_count;
-	time_t			last_compile_time;
+	long long		last_compile_time;
 	t_rules			*rules;
 	struct s_box	*box;
 	t_dongle		*l_dongle;
@@ -59,6 +58,7 @@ typedef struct s_box
 	t_dongle		*dongles;
 	t_coder			*coders;
 	int				sim_stopped;
+	long long		start_time;
 	pthread_mutex_t	print_lock;
 	pthread_mutex_t	stop_lock;
 	pthread_t		*threads;
@@ -74,8 +74,6 @@ void		print_status(t_coder *coder, char *status_msg);
 void		ft_usleep(long long milliseconds, t_box *box);
 int			check_sim_status(t_box *box);
 int			is_dongle_cooling(t_dongle *dongle);
-int			try_get_dongle(t_dongle *dongle);
-int			start_sim(t_box *box);
 void		enqueue_coder(t_dongle *dongle, int coder_id, t_box *box);
 void		dequeue_coder(t_dongle *dongle);
 void		coder_compile(t_coder *coder);
@@ -84,5 +82,7 @@ void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
 int			take_both_dongles(t_coder *coder);
 void		*burnout_monitor(void *arg);
+int			all_coders_finished(t_box *box);
+void		*coder_routine(void *arg);
 
 #endif

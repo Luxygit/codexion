@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 13:33:57 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 15:10:45 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,7 @@
 
 int	is_dongle_cooling(t_dongle *dongle)
 {
-	long long	current_time;
-
-	current_time = get_time();
-	if (current_time < dongle->cooldown)
+	if (get_time() < dongle->cooldown)
 		return (1);
 	return (0);
 }
@@ -31,19 +28,20 @@ void	*coder_routine(void *arg)
 	while (!check_sim_status(coder->box))
 	{
 		if (coder->comp_count == coder->rules->num_compiles_required)
-			break ;
-		coder_think(coder);
-		while (!check_sim_status(coder->box))
 		{
-			if (take_both_dongles(coder))
-				break ;
-			usleep(1000);
+			usleep(5000);
+			continue ;
 		}
+		coder_think(coder);
+		while (!check_sim_status(coder->box) && !take_both_dongles(coder))
+			usleep(1000);
 		if (check_sim_status(coder->box))
 			break ;
 		coder_compile(coder);
-		coder_debug(coder);
-		coder_refactor(coder);
+		if (check_sim_status(coder->box))
+			coder_debug(coder);
+		if (check_sim_status(coder->box))
+			coder_refactor(coder);
 	}
 	return (NULL);
 }
@@ -52,7 +50,13 @@ int	start_sim(t_box *box)
 {
 	int			i;
 	pthread_t	monitor;
+	long long	start_time;
 
+	i = -1;
+	start_time = get_time();
+	box->start_time = start_time;
+	while (++i < box->rules.num_coders)
+		box->coders[i].last_compile_time = start_time;
 	i = 0;
 	while (i < box->rules.num_coders)
 	{
@@ -60,12 +64,9 @@ int	start_sim(t_box *box)
 		i++;
 	}
 	pthread_create(&monitor, NULL, burnout_monitor, box);
-	i = 0;
-	while (i < box->rules.num_coders)
-	{
+	i = -1;
+	while (++i < box->rules.num_coders)
 		pthread_join(box->threads[i], NULL);
-		i++;
-	}
 	pthread_join(monitor, NULL);
 	return (0);
 }
@@ -91,8 +92,10 @@ void	*burnout_monitor(void *arg)
 	box = (t_box *)arg;
 	while (!check_sim_status(box))
 	{
-		i = 0;
-		while (i < box->rules.num_coders)
+		if (all_coders_finished(box))
+			break ;
+		i = -1;
+		while (++i < box->rules.num_coders)
 		{
 			if (get_time() - box->coders[i].last_compile_time
 				> box->rules.time_to_burnout)
@@ -103,9 +106,8 @@ void	*burnout_monitor(void *arg)
 				print_status(&box->coders[i], "burned out");
 				return (NULL);
 			}
-			i++;
 		}
-		usleep(1000);
+		usleep(500);
 	}
 	return (NULL);
 }
