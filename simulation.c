@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 15:10:45 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 15:21:00 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	*coder_routine(void *arg)
 			coder_debug(coder);
 		if (check_sim_status(coder->box))
 			coder_refactor(coder);
+		usleep(1000);
 	}
 	return (NULL);
 }
@@ -100,14 +101,15 @@ void	*burnout_monitor(void *arg)
 			if (get_time() - box->coders[i].last_compile_time
 				> box->rules.time_to_burnout)
 			{
+				print_status(&box->coders[i], "burned out");
 				pthread_mutex_lock(&box->stop_lock);
 				box->sim_stopped = 1;
 				pthread_mutex_unlock(&box->stop_lock);
-				print_status(&box->coders[i], "burned out");
 				return (NULL);
 			}
 		}
 		usleep(500);
 	}
-	return (NULL);
+	pthread_mutex_lock(&box->stop_lock);
+	return (box->sim_stopped = 1, pthread_mutex_unlock(&box->stop_lock), NULL);
 }

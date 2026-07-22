@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 14:59:31 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 15:28:40 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,14 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
-	if (dongle->in_use == 1 || get_time() < dongle->cooldown)
+	if (dongle->in_use == 1 || is_dongle_cooling(dongle))
 	{
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
 	dongle->in_use = 1;
 	pthread_mutex_unlock(&dongle->lock);
-	print_status(coder, "has taken a dongle");
+	//print_status(coder, "has taken a dongle");
 	return (1);
 }
 
@@ -54,5 +54,7 @@ int	take_both_dongles(t_coder *coder)
 	pthread_mutex_lock(&coder->r_dongle->lock);
 	dequeue_coder(coder->r_dongle);
 	pthread_mutex_unlock(&coder->r_dongle->lock);
+	print_status(coder, "has taken a dongle");
+	print_status(coder, "has taken a dongle");
 	return (1);
 }
