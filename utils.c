@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/21 19:46:18 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:41:52 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ long long	get_time(void)
 	return (((long long)tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
 
-void	ft_usleep(long long milliseconds, tbox *box)
+void	ft_usleep(long long milliseconds, t_box *box)
 {
 	long long	start_time;
 
@@ -43,7 +43,7 @@ int	check_sim_status(t_box *box)
 {
 	int	status;
 
-	pthread_mutex_locK(&box->stop_lock);
+	pthread_mutex_lock(&box->stop_lock);
 	status = box->sim_stopped;
 	pthread_mutex_unlock(&box->stop_lock);
 	return (status);

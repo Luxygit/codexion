@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 12:02:06 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:40:28 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	coder_compile(t_coder *coder)
 {
 	print_status(coder, "is compiling");
 	coder->last_compile_time = get_time();
-	ft_usleep(ccoder->rules->time_to_compile, coder->box);
+	ft_usleep(coder->rules->time_to_compile, coder->box);
 	coder->comp_count++;
 	pthread_mutex_lock(&coder->l_dongle->lock);
 	coder->l_dongle->in_use = 0;

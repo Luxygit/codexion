@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 13:12:06 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 13:41:23 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,9 +36,9 @@ static void	drop_left(t_dongle *l_dongle)
 
 int	take_both_dongles(t_coder *coder)
 {
-	if (!check_and_lock(coder->l_dongle, coder_id))
+	if (!check_and_lock(coder->l_dongle, coder))
 		return (0);
-	if (!check_and_lock(coder->r_dongle, coder_id))
+	if (!check_and_lock(coder->r_dongle, coder))
 	{
 		drop_left(coder->l_dongle);
 		return (0);
