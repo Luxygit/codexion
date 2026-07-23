@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 12:01:04 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 17:04:40 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void	coder_refactor(t_coder *coder)
 {
 	print_status(coder, "is refactoring");
 	ft_usleep(coder->rules->time_to_refactor, coder->box);
+	coder->last_compile_time = get_time();
 }
 
 void	coder_take_dongle(t_coder *coder, t_dongle *dongle)

@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 11:32:05 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 17:02:18 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ static void	wait_cooldown(t_dongle *dongle, t_box *box)
 	while (get_time() < dongle->cooldown && !check_sim_status(box))
 	{
 		pthread_mutex_unlock(&dongle->lock);
-		usleep(500);
+		usleep(200);
 		pthread_mutex_lock(&dongle->lock);
 	}
 }
@@ -92,6 +92,8 @@ int	take_both_dongles(t_coder *coder)
 	if (!check_and_lock(second, coder))
 	{
 		release_dongle(first);
+		pthread_mutex_lock(&first->lock);
+		pthread_mutex_unlock(&first->lock);
 		return (0);
 	}
 	coder_take_dongle(coder, coder->l_dongle);

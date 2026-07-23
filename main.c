@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:43:27 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 15:15:51 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,23 @@ void	free_all(t_box *box)
 	free(box->dongles);
 	free(box->coders);
 	free(box->threads);
+}
+
+int	parse_args(t_box *box, int ac, char **av)
+{
+	if (!validate_args(ac, av))
+		return (0);
+	box->rules.num_coders = ft_atoi_safe(av[1]);
+	box->rules.time_to_burnout = ft_atoi_safe(av[2]);
+	box->rules.time_to_compile = ft_atoi_safe(av[3]);
+	box->rules.time_to_debug = ft_atoi_safe(av[4]);
+	box->rules.time_to_refactor = ft_atoi_safe(av[5]);
+	box->rules.num_compiles_required = ft_atoi_safe(av[6]);
+	box->rules.dongle_cooldown = ft_atoi_safe(av[7]);
+	box->rules.is_edf = 0;
+	if (strcmp(av[8], "edf") == 0)
+		box->rules.is_edf = 1;
+	return (1);
 }
 
 int	main(int ac, char **av)

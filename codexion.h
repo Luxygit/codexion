@@ -75,9 +75,10 @@ typedef struct s_box
 
 int			ft_is_num(char *str);
 long long	ft_atoi_safe(char *str);
-int			parse_args(t_box *box, int ac, char **av);
+int			validate_args(int ac, char **av);
 
 int			init_data(t_box *box);
+int			parse_args(t_box *box, int ac, char **av);
 
 int			start_sim(t_box *box);
 void		*burnout_monitor(void *arg);

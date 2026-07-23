@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 12:00:39 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 17:11:28 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ void	*coder_routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
+	coder->last_compile_time = get_time();
 	while (!check_sim_status(coder->box))
 	{
 		if (coder->comp_count == coder->rules->num_compiles_required)
@@ -25,7 +26,10 @@ void	*coder_routine(void *arg)
 			continue ;
 		}
 		if (!take_both_dongles(coder))
+		{
+			usleep(2000);
 			continue ;
+		}
 		coder_compile(coder);
 		if (!check_sim_status(coder->box))
 			coder_debug(coder);

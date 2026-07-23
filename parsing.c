@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:30:30 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 17:22:43 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,26 @@ int	ft_is_num(char *str)
 	return (1);
 }
 
+static int	validate_ranges(long long val, int index)
+{
+	if (index == 1 && (val < 2 || val > 200))
+	{
+		write(2, "Error: Coder count must be between 2 and 200\n", 45);
+		return (0);
+	}
+	if (index == 2 && (val < 100 || val > 100000))
+	{
+		write(2, "Error: Burnout limit must be 100ms - 100s\n", 41);
+		return (0);
+	}
+	if (index == 6 && (val < 1 || val > 1000))
+	{
+		write(2, "Error: Compile limits must be 1 - 1000\n", 39);
+		return (0);
+	}
+	return (1);
+}
+
 static int	check_num_bounds(char **av)
 {
 	int			i;
@@ -59,17 +79,20 @@ static int	check_num_bounds(char **av)
 			return (0);
 		}
 		val = ft_atoi_safe(av[i]);
-		if (val <= 0 || (i == 1 && val < 2))
+		if (val < 0 || (val == 0 && i != 3 && i != 4 && i != 5 && i != 7)
+			|| (i >= 3 && i <= 5 && val > 10000) || (i == 7 && val > 5000))
 		{
-			write(2, "Error: Arguments must be positive (min 2 coders)\n", 50);
+			write(2, "Error: Invalid argument values or ranges\n", 41);
 			return (0);
 		}
+		if (!validate_ranges(val, i))
+			return (0);
 		i++;
 	}
 	return (1);
 }
 
-static int	validate_args(int ac, char **av)
+int	validate_args(int ac, char **av)
 {
 	if (ac != 9)
 	{
@@ -83,22 +106,11 @@ static int	validate_args(int ac, char **av)
 		write(2, "Error: Scheduler must be fifo or edf\n", 37);
 		return (0);
 	}
-	return (1);
-}
-
-int	parse_args(t_box *box, int ac, char **av)
-{
-	if (!validate_args(ac, av))
+	if (ft_atoi_safe(av[2]) <= (ft_atoi_safe(av[3]) + ft_atoi_safe(av[4])
+			+ ft_atoi_safe(av[5]) + ft_atoi_safe(av[7])))
+	{
+		write(2, "Error: Imposible Simulation (lifetime too short)\n", 49);
 		return (0);
-	box->rules.num_coders = ft_atoi_safe(av[1]);
-	box->rules.time_to_burnout = ft_atoi_safe(av[2]);
-	box->rules.time_to_compile = ft_atoi_safe(av[3]);
-	box->rules.time_to_debug = ft_atoi_safe(av[4]);
-	box->rules.time_to_refactor = ft_atoi_safe(av[5]);
-	box->rules.num_compiles_required = ft_atoi_safe(av[6]);
-	box->rules.dongle_cooldown = ft_atoi_safe(av[7]);
-	box->rules.is_edf = 0;
-	if (strcmp(av[8], "edf") == 0)
-		box->rules.is_edf = 1;
+	}
 	return (1);
 }
