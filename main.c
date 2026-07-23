@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:04:42 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 02:43:27 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ static int	allocate_heaps(t_box *box)
 		if (!box->dongles[i].heap)
 			return (0);
 		box->dongles[i].heap_size = 0;
+		box->dongles[i].capacity = box->rules.num_coders;
 		i++;
 	}
 	return (1);

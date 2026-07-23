@@ -46,6 +46,7 @@ typedef struct s_dongle
 	pthread_cond_t	cond;
 	t_heap_node		*heap;
 	int				heap_size;
+	int				capacity;
 }	t_dongle;
 
 typedef struct s_coder

@@ -6,11 +6,18 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 00:47:35 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 02:53:07 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
+
+static int	has_prio(t_heap_node a, t_heap_node b)
+{
+	if (a.priority < b.priority)
+		return (1);
+	return (0);
+}
 
 static void	heapify_up(t_dongle *dongle, int i)
 {
@@ -20,7 +27,7 @@ static void	heapify_up(t_dongle *dongle, int i)
 	while (i > 0)
 	{
 		parent = (i - 1) / 2;
-		if (dongle->heap[i].priority >= dongle->heap[parent].priority)
+		if (!has_prio(dongle->heap[i], dongle->heap[parent]))
 			break ;
 		tmp = dongle->heap[i];
 		dongle->heap[i] = dongle->heap[parent];
@@ -41,11 +48,11 @@ static void	heapify_down(t_dongle *dongle, int i)
 		smallest = i;
 		left = 2 * i + 1;
 		right = 2 * i + 2;
-		if (left < dongle->heap_size && dongle->heap[left].priority
-			< dongle->heap[smallest].priority)
+		if (left < dongle->heap_size && has_prio(dongle->heap[left],
+				dongle->heap[smallest]))
 			smallest = left;
-		if (right < dongle->heap_size && dongle->heap[right].priority
-			< dongle->heap[smallest].priority)
+		if (right < dongle->heap_size && has_prio(dongle->heap[right],
+				dongle->heap[smallest]))
 			smallest = right;
 		if (smallest == i)
 			break ;
@@ -67,6 +74,8 @@ void	push_heap(t_dongle *dongle, int coder_id, long long priority)
 			return ;
 		i++;
 	}
+	if (dongle->heap_size >= dongle->capacity)
+		return ;
 	dongle->heap[dongle->heap_size].coder_id = coder_id;
 	dongle->heap[dongle->heap_size].priority = priority;
 	dongle->heap_size++;
