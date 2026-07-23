@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:11:24 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 11:32:05 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,16 +30,12 @@ static long long	get_priority(t_coder *coder)
 	return (priority);
 }
 
-static void	wait_cooldown(t_dongle *dongle)
+static void	wait_cooldown(t_dongle *dongle, t_box *box)
 {
-	long long	rem;
-
-	while (get_time() < dongle->cooldown)
+	while (get_time() < dongle->cooldown && !check_sim_status(box))
 	{
-		rem = dongle->cooldown - get_time();
 		pthread_mutex_unlock(&dongle->lock);
-		if (rem > 0)
-			usleep(rem * 1000);
+		usleep(500);
 		pthread_mutex_lock(&dongle->lock);
 	}
 }
@@ -49,7 +45,7 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 	long long	priority;
 
 	pthread_mutex_lock(&dongle->lock);
-	wait_cooldown(dongle);
+	wait_cooldown(dongle, coder->box);
 	priority = get_priority(coder);
 	push_heap(dongle, coder->id, priority);
 	while (!check_sim_status(coder->box) && ((dongle->heap_size > 0
@@ -68,32 +64,37 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 	return (1);
 }
 
-static void	drop_left(t_dongle *l_dongle)
+static void	release_dongle(t_dongle *dongle)
 {
-	pthread_mutex_lock(&l_dongle->lock);
-	l_dongle->in_use = 0;
-	pthread_cond_broadcast(&l_dongle->cond);
-	pthread_mutex_unlock(&l_dongle->lock);
+	pthread_mutex_lock(&dongle->lock);
+	dongle->in_use = 0;
+	pthread_cond_broadcast(&dongle->cond);
+	pthread_mutex_unlock(&dongle->lock);
 }
 
 int	take_both_dongles(t_coder *coder)
 {
-	if (!check_and_lock(coder->l_dongle, coder))
-		return (0);
-	if (!check_and_lock(coder->r_dongle, coder))
+	t_dongle	*first;
+	t_dongle	*second;
+
+	if (coder->l_dongle < coder->r_dongle)
 	{
-		drop_left(coder->l_dongle);
+		first = coder->l_dongle;
+		second = coder->r_dongle;
+	}
+	else
+	{
+		first = coder->r_dongle;
+		second = coder->l_dongle;
+	}
+	if (!check_and_lock(first, coder))
+		return (0);
+	if (!check_and_lock(second, coder))
+	{
+		release_dongle(first);
 		return (0);
 	}
-	pthread_mutex_lock(&coder->l_dongle->lock);
-	pop_heap(coder->l_dongle);
-	pthread_cond_broadcast(&coder->l_dongle->cond);
-	pthread_mutex_unlock(&coder->l_dongle->lock);
-	pthread_mutex_lock(&coder->r_dongle->lock);
-	pop_heap(coder->r_dongle);
-	pthread_cond_broadcast(&coder->r_dongle->cond);
-	pthread_mutex_unlock(&coder->r_dongle->lock);
-	print_status(coder, "has taken a dongle");
-	print_status(coder, "has taken a dongle");
+	coder_take_dongle(coder, coder->l_dongle);
+	coder_take_dongle(coder, coder->r_dongle);
 	return (1);
 }

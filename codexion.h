@@ -82,7 +82,7 @@ int			init_data(t_box *box);
 int			start_sim(t_box *box);
 void		*burnout_monitor(void *arg);
 void		*coder_routine(void *arg);
-int			is_dongle_cooling(t_dongle *dongle);
+void		wake_all_dongles(t_box *box);
 
 long long	get_time(void);
 void		print_status(t_coder *coder, char *status_msg);
@@ -94,7 +94,7 @@ void		push_heap(t_dongle *dongle, int coder_id, long long priority);
 void		pop_heap(t_dongle *dongle);
 
 void		coder_compile(t_coder *coder);
-void		coder_think(t_coder *coder);
+void		coder_take_dongle(t_coder *coder, t_dongle *dongle);
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
 

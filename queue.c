@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:53:07 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 11:54:46 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 static int	has_prio(t_heap_node a, t_heap_node b)
 {
 	if (a.priority < b.priority)
-		return (1);
-	return (0);
+		return (a.priority < b.priority);
+	return (a.coder_id < b.coder_id);
 }
 
 static void	heapify_up(t_dongle *dongle, int i)

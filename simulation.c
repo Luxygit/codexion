@@ -6,18 +6,11 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:03:52 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 12:00:39 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
-int	is_dongle_cooling(t_dongle *dongle)
-{
-	if (get_time() < dongle->cooldown)
-		return (1);
-	return (0);
-}
 
 void	*coder_routine(void *arg)
 {
@@ -31,7 +24,6 @@ void	*coder_routine(void *arg)
 			usleep(5000);
 			continue ;
 		}
-		coder_think(coder);
 		if (!take_both_dongles(coder))
 			continue ;
 		coder_compile(coder);
@@ -62,11 +54,25 @@ int	start_sim(t_box *box)
 		i++;
 	}
 	pthread_create(&monitor, NULL, burnout_monitor, box);
-	i = -1;
+	i = 1;
 	while (++i < box->rules.num_coders)
 		pthread_join(box->threads[i], NULL);
 	pthread_join(monitor, NULL);
 	return (0);
+}
+
+void	wake_all_dongles(t_box *box)
+{
+	int	i;
+
+	i = 0;
+	while (i < box->rules.num_coders)
+	{
+		pthread_mutex_lock(&box->dongles[i].lock);
+		pthread_cond_broadcast(&box->dongles[i].cond);
+		pthread_mutex_unlock(&box->dongles[i].lock);
+		i++;
+	}
 }
 
 void	*burnout_monitor(void *arg)
@@ -89,6 +95,7 @@ void	*burnout_monitor(void *arg)
 				pthread_mutex_lock(&box->stop_lock);
 				box->sim_stopped = 1;
 				pthread_mutex_unlock(&box->stop_lock);
+				wake_all_dongles(box);
 				return (NULL);
 			}
 		}
