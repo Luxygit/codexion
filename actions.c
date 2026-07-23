@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 13:40:28 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 02:01:07 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,12 @@ void	coder_compile(t_coder *coder)
 	pthread_mutex_lock(&coder->l_dongle->lock);
 	coder->l_dongle->in_use = 0;
 	coder->l_dongle->cooldown = get_time() + coder->rules->dongle_cooldown;
+	pthread_cond_broadcast(&coder->l_dongle->cond);
 	pthread_mutex_unlock(&coder->l_dongle->lock);
 	pthread_mutex_lock(&coder->r_dongle->lock);
 	coder->r_dongle->in_use = 0;
 	coder->r_dongle->cooldown = get_time() + coder->rules->dongle_cooldown;
+	pthread_cond_broadcast(&coder->r_dongle->cond);
 	pthread_mutex_unlock(&coder->r_dongle->lock);
 }
 
@@ -42,5 +44,5 @@ void	coder_refactor(t_coder *coder)
 
 void	coder_think(t_coder *coder)
 {
-	print_status(coder, "is thinking");
+	(void)coder;
 }

@@ -6,63 +6,78 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 14:59:49 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 00:47:35 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static void	sort_queue_edf(t_dongle *dongle, t_box *box)
+static void	heapify_up(t_dongle *dongle, int i)
 {
-	int			id_a;
-	int			id_b;
-	long long	deadline_a;
-	long long	deadline_b;
-	int			tmp;
+	t_heap_node	tmp;
+	int			parent;
 
-	if (dongle->queue_size < 2)
-		return ;
-	id_a = dongle->waiting_queue[0];
-	id_b = dongle->waiting_queue[1];
-	if (id_a <= 0 || id_b <= 0 || id_a > box->rules.num_coders
-		|| id_b > box->rules.num_coders)
-		return ;
-	deadline_a = box->coders[id_a - 1].last_compile_time
-		+ box->rules.time_to_burnout;
-	deadline_b = box->coders[id_b - 1].last_compile_time
-		+ box->rules.time_to_burnout;
-	if (deadline_b < deadline_a)
+	while (i > 0)
 	{
-		tmp = dongle->waiting_queue[0];
-		dongle->waiting_queue[0] = dongle->waiting_queue[1];
-		dongle->waiting_queue[1] = tmp;
+		parent = (i - 1) / 2;
+		if (dongle->heap[i].priority >= dongle->heap[parent].priority)
+			break ;
+		tmp = dongle->heap[i];
+		dongle->heap[i] = dongle->heap[parent];
+		dongle->heap[parent] = tmp;
+		i = parent;
 	}
 }
 
-void	enqueue_coder(t_dongle *dongle, int coder_id, t_box *box)
+static void	heapify_down(t_dongle *dongle, int i)
+{
+	int			smallest;
+	int			left;
+	int			right;
+	t_heap_node	tmp;
+
+	while (1)
+	{
+		smallest = i;
+		left = 2 * i + 1;
+		right = 2 * i + 2;
+		if (left < dongle->heap_size && dongle->heap[left].priority
+			< dongle->heap[smallest].priority)
+			smallest = left;
+		if (right < dongle->heap_size && dongle->heap[right].priority
+			< dongle->heap[smallest].priority)
+			smallest = right;
+		if (smallest == i)
+			break ;
+		tmp = dongle->heap[i];
+		dongle->heap[i] = dongle->heap[smallest];
+		dongle->heap[smallest] = tmp;
+		i = smallest;
+	}
+}
+
+void	push_heap(t_dongle *dongle, int coder_id, long long priority)
 {
 	int	i;
 
 	i = 0;
-	while (i < dongle->queue_size)
+	while (i < dongle->heap_size)
 	{
-		if (dongle->waiting_queue[i] == coder_id)
+		if (dongle->heap[i].coder_id == coder_id)
 			return ;
 		i++;
 	}
-	if (dongle->queue_size >= 2)
-		return ;
-	dongle->waiting_queue[dongle->queue_size] = coder_id;
-	dongle->queue_size++;
-	if (box->rules.is_edf)
-		sort_queue_edf(dongle, box);
+	dongle->heap[dongle->heap_size].coder_id = coder_id;
+	dongle->heap[dongle->heap_size].priority = priority;
+	dongle->heap_size++;
+	heapify_up(dongle, dongle->heap_size - 1);
 }
 
-void	dequeue_coder(t_dongle *dongle)
+void	pop_heap(t_dongle *dongle)
 {
-	if (dongle->queue_size == 0)
+	if (dongle->heap_size == 0)
 		return ;
-	dongle->waiting_queue[0] = dongle->waiting_queue[1];
-	dongle->waiting_queue[1] = 0;
-	dongle->queue_size--;
+	dongle->heap[0] = dongle->heap[dongle->heap_size - 1];
+	dongle->heap_size--;
+	heapify_down(dongle, 0);
 }

@@ -32,13 +32,20 @@ typedef struct s_rules
 	int		is_edf;
 }	t_rules;
 
+typedef struct s_heap_node
+{
+	int			coder_id;
+	long long	priority;
+}	t_heap_node;
+
 typedef struct s_dongle
 {
 	int				in_use;
 	long long		cooldown;
 	pthread_mutex_t	lock;
-	int				waiting_queue[2];
-	int				queue_size;
+	pthread_cond_t	cond;
+	t_heap_node		*heap;
+	int				heap_size;
 }	t_dongle;
 
 typedef struct s_coder
@@ -59,6 +66,7 @@ typedef struct s_box
 	t_coder			*coders;
 	int				sim_stopped;
 	long long		start_time;
+	long long		ticket_counter;
 	pthread_mutex_t	print_lock;
 	pthread_mutex_t	stop_lock;
 	pthread_t		*threads;
@@ -67,22 +75,28 @@ typedef struct s_box
 int			ft_is_num(char *str);
 long long	ft_atoi_safe(char *str);
 int			parse_args(t_box *box, int ac, char **av);
+
 int			init_data(t_box *box);
+
 int			start_sim(t_box *box);
+void		*burnout_monitor(void *arg);
+void		*coder_routine(void *arg);
+int			is_dongle_cooling(t_dongle *dongle);
+
 long long	get_time(void);
 void		print_status(t_coder *coder, char *status_msg);
 void		ft_usleep(long long milliseconds, t_box *box);
 int			check_sim_status(t_box *box);
-int			is_dongle_cooling(t_dongle *dongle);
-void		enqueue_coder(t_dongle *dongle, int coder_id, t_box *box);
-void		dequeue_coder(t_dongle *dongle);
+int			all_coders_finished(t_box *box);
+
+void		push_heap(t_dongle *dongle, int coder_id, long long priority);
+void		pop_heap(t_dongle *dongle);
+
 void		coder_compile(t_coder *coder);
 void		coder_think(t_coder *coder);
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
+
 int			take_both_dongles(t_coder *coder);
-void		*burnout_monitor(void *arg);
-int			all_coders_finished(t_box *box);
-void		*coder_routine(void *arg);
 
 #endif

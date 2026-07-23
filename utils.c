@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 15:13:13 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/22 22:51:15 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,5 +75,9 @@ int	all_coders_finished(t_box *box)
 			return (0);
 		i++;
 	}
+	pthread_mutex_lock(&box->stop_lock);
+	box->sim_stopped = 1;
+	pthread_mutex_unlock(&box->stop_lock);
+	return (1);
 	return (1);
 }

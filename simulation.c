@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/22 15:21:00 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 02:03:52 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ void	*coder_routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
-	coder->last_compile_time = get_time();
 	while (!check_sim_status(coder->box))
 	{
 		if (coder->comp_count == coder->rules->num_compiles_required)
@@ -33,14 +32,12 @@ void	*coder_routine(void *arg)
 			continue ;
 		}
 		coder_think(coder);
-		while (!check_sim_status(coder->box) && !take_both_dongles(coder))
-			usleep(1000);
-		if (check_sim_status(coder->box))
-			break ;
+		if (!take_both_dongles(coder))
+			continue ;
 		coder_compile(coder);
-		if (check_sim_status(coder->box))
+		if (!check_sim_status(coder->box))
 			coder_debug(coder);
-		if (check_sim_status(coder->box))
+		if (!check_sim_status(coder->box))
 			coder_refactor(coder);
 		usleep(1000);
 	}
@@ -72,19 +69,6 @@ int	start_sim(t_box *box)
 	return (0);
 }
 
-int	try_get_dongle(t_dongle *dongle)
-{
-	pthread_mutex_lock(&dongle->lock);
-	if (dongle->in_use == 1 || is_dongle_cooling(dongle))
-	{
-		pthread_mutex_unlock(&dongle->lock);
-		return (0);
-	}
-	dongle->in_use = 1;
-	pthread_mutex_unlock(&dongle->lock);
-	return (1);
-}
-
 void	*burnout_monitor(void *arg)
 {
 	t_box	*box;
@@ -94,7 +78,7 @@ void	*burnout_monitor(void *arg)
 	while (!check_sim_status(box))
 	{
 		if (all_coders_finished(box))
-			break ;
+			return (NULL);
 		i = -1;
 		while (++i < box->rules.num_coders)
 		{
@@ -110,6 +94,5 @@ void	*burnout_monitor(void *arg)
 		}
 		usleep(500);
 	}
-	pthread_mutex_lock(&box->stop_lock);
-	return (box->sim_stopped = 1, pthread_mutex_unlock(&box->stop_lock), NULL);
+	return (NULL);
 }
