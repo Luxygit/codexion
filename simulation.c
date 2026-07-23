@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 17:11:28 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 19:18:24 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,16 @@ void	*coder_routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
+	pthread_mutex_lock(&coder->l_dongle->lock);
 	coder->last_compile_time = get_time();
+	pthread_mutex_unlock(&coder->l_dongle->lock);
 	while (!check_sim_status(coder->box))
 	{
-		if (coder->comp_count == coder->rules->num_compiles_required)
-		{
-			usleep(5000);
+		if (is_done_compiling(coder))
 			continue ;
-		}
 		if (!take_both_dongles(coder))
 		{
-			usleep(2000);
+			usleep(100);
 			continue ;
 		}
 		coder_compile(coder);
@@ -58,7 +57,7 @@ int	start_sim(t_box *box)
 		i++;
 	}
 	pthread_create(&monitor, NULL, burnout_monitor, box);
-	i = 1;
+	i = 0;
 	while (++i < box->rules.num_coders)
 		pthread_join(box->threads[i], NULL);
 	pthread_join(monitor, NULL);
@@ -79,6 +78,23 @@ void	wake_all_dongles(t_box *box)
 	}
 }
 
+static int	is_burned_out(t_coder *coder, t_rules *rules)
+{
+	long long	last_comp;
+
+	pthread_mutex_lock(&coder->l_dongle->lock);
+	if (coder->comp_count >= rules->num_compiles_required)
+	{
+		pthread_mutex_unlock(&coder->l_dongle->lock);
+		return (0);
+	}
+	last_comp = coder->last_compile_time;
+	pthread_mutex_unlock(&coder->l_dongle->lock);
+	if (get_time() - last_comp > rules->time_to_burnout)
+		return (1);
+	return (0);
+}
+
 void	*burnout_monitor(void *arg)
 {
 	t_box	*box;
@@ -92,8 +108,7 @@ void	*burnout_monitor(void *arg)
 		i = -1;
 		while (++i < box->rules.num_coders)
 		{
-			if (get_time() - box->coders[i].last_compile_time
-				> box->rules.time_to_burnout)
+			if (is_burned_out(&box->coders[i], &box->rules))
 			{
 				print_status(&box->coders[i], "burned out");
 				pthread_mutex_lock(&box->stop_lock);
@@ -103,7 +118,7 @@ void	*burnout_monitor(void *arg)
 				return (NULL);
 			}
 		}
-		usleep(500);
+		usleep(300);
 	}
 	return (NULL);
 }

@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 11:50:29 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 19:21:50 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	ft_usleep(long long milliseconds, t_box *box)
 			break ;
 		}
 		pthread_mutex_unlock(&box->stop_lock);
-		usleep(100);
+		usleep(500);
 	}
 }
 
@@ -71,8 +71,13 @@ int	all_coders_finished(t_box *box)
 	i = 0;
 	while (i < box->rules.num_coders)
 	{
+		pthread_mutex_lock(&box->coders[i].l_dongle->lock);
 		if (box->coders[i].comp_count < box->rules.num_compiles_required)
+		{
+			pthread_mutex_unlock(&box->coders[i].l_dongle->lock);
 			return (0);
+		}
+		pthread_mutex_unlock(&box->coders[i].l_dongle->lock);
 		i++;
 	}
 	pthread_mutex_lock(&box->stop_lock);

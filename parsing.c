@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 17:22:43 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 17:45:37 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,9 @@ static int	validate_ranges(long long val, int index)
 		write(2, "Error: Coder count must be between 2 and 200\n", 45);
 		return (0);
 	}
-	if (index == 2 && (val < 100 || val > 100000))
+	if (index == 2 && val < 4)
 	{
-		write(2, "Error: Burnout limit must be 100ms - 100s\n", 41);
+		write(2, "Error: Burnout limit must be over 4ms\n", 38);
 		return (0);
 	}
 	if (index == 6 && (val < 1 || val > 1000))

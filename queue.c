@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 11:54:46 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/23 18:46:09 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 static int	has_prio(t_heap_node a, t_heap_node b)
 {
-	if (a.priority < b.priority)
+	if (a.priority != b.priority)
 		return (a.priority < b.priority);
 	return (a.coder_id < b.coder_id);
 }

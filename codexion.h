@@ -98,6 +98,7 @@ void		coder_compile(t_coder *coder);
 void		coder_take_dongle(t_coder *coder, t_dongle *dongle);
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
+int			is_done_compiling(t_coder *coder);
 
 int			take_both_dongles(t_coder *coder);
 
