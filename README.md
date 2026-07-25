@@ -1,50 +1,102 @@
 *This project has been created as part of the 42 curriculum by dievarga.*
 
 ## Description
-Codexion is a multi-threaded simulation within a shared environment. In this project, multiple concurrent coders sit in a circular workspace where they compile code, debug, or refactor at individual specific times.
 
-To start a compilation phase, a coder must simultaneously claim exclusive ownership over exactly two shared dongles, the one on their left and the one on their right. Since dongles are a shared resource between contiguous desk neighbors, threads must coordinate access via real-time heap prioritization following either FIFO (First In, First Out) or EDF (Earliest Deadline First). 
-The core objective is to execute the simulation ensuring perfect data safety while preventing circular wait locks (deadlocks) and individual coder burnout (spent too long without coding).
+Codexion is a multithreaded simulation project written in C. It is basically the
+"dining philosophers" problem but reskinned: instead of philosophers and forks,
+we have coders who need two USB dongles to compile their code. Each coder sits
+in a circle and shares one dongle with the coder on their left and one with the
+coder on their right.
+
+To compile, a coder needs to grab both of their dongles at the same time. After
+compiling, they debug, then refactor, then try to compile again. If a coder goes
+too long without compiling, they "burn out" and the whole simulation stops. The
+goal is to write a program where every coder gets to compile regularly, using
+threads and mutexes to share the dongles safely, without deadlocks and without
+anyone starving.
 
 ## Instructions
 
-### Compilation
-The project compiles using a Makefile with strict compilation warning flags (-Wall -Wextra -Werror -pthread).
+To compile the project, just run:
+```
+make
+```
+This creates the `codexion` executable.
 
-To cleanly compile the project run: make
+To run it, you need to give it 8 arguments:
+```
+./codexion number_of_coders time_to_burnout time_to_compile time_to_debug time_to_refactor number_of_compiles_required dongle_cooldown scheduler
+```
 
-### Execution
-The executable must be launched from the terminal using 8 mandatory numeric and text arguments:
-./codexion <number_of_coders> <time_to_burnout> <time_to_compile> <time_to_debug> <time_to_refactor> <number_of_compiles_required> <dongle_cooldown> <scheduler>
+Example:
+```
+./codexion 5 800 200 200 200 3 50 fifo
+```
 
-#### Running Example (FIFO Mode)
-./codexion 4 800 200 200 200 5 100 fifo
+- `scheduler` must be either `fifo` or `edf`.
+- All the numeric arguments must be positive whole numbers, and `number_of_coders`
+  must be at least 2.
 
-#### Running Example (EDF Mode)
-./codexion 4 800 200 200 200 5 100 edf
-
-## Blocking Cases Handled
-My implementation counters classical concurrency design vulnerabilities and satisfies Coffman's dynamic interlocking conditions through the following technical designs:
-- Deadlock Prevention (Breaking Coffman Conditions): To violate the Hold and Wait and Circular Wait conditions, our architecture enforces a strict all-or-nothing acquisition gateway (take_both_dongles()). A thread claims its first resource via a lock-ordered pointer comparison (first address is smaller than second address) to prevent asymmetrical lock chasing. If the secondary resource is unavailable due to queue priority or usage states, the coder immediately releases its initial held resource (release_dongle), yields back to the scheduler, and rests before re-attempting.
-- Starvation Prevention: Threads executing lifestyle state transformations voluntarily sleep (usleep(1000)) right at the end of their lifecycle loop pass. This active yielding forces aggressive thread context switching, preventing super-fast threads from instantly re-claiming dongles before sleeping neighbors can check parameters.
-- Cooldown Handling: When a dongle is dropped, it is stamped with a precise future availability deadline (current_time + dongle_cooldown). Arriving threads check this benchmark safely within an exclusive locked context. If the cooldown has not expired, the thread calculates the exact remaining delta and takes a microsecond nap via usleep() before joining queue tree arrays, preventing empty polling waste.
-- Precise Burnout Detection: A dedicated monitoring thread (burnout_monitor) sweeps across all coder objects at ultra-short intervals. By assessing real-world millisecond timestamps (get_time() - last_compile_time > time_to_burnout), it intercepts coder starvation, logs the precise failure state, and safely terminates the system within the strict 10ms deadline constraint required by the subject.
-- Log Serialization: To fully guarantee that multi-threaded outputs are never broken apart, mixed up, or interleaved on the terminal console, all printing tasks pass through a single serialized gate locked by an isolated printing mutex (print_lock).
-
-## Thread Synchronization Mechanisms
-The project infrastructure isolates shared components through standard POSIX primitives and thread-safe data flow models:
-
-- pthread_mutex_t (Mutual Exclusion):
-    - Dongle States: Individual locks (dongle->lock) wrap around every single dongle structure, safeguarding changes made to in_use status variables, cooldown counters, and heap trees.
-    - Output Serialization: print_lock serializes stdout writes, forcing threads to wait sequentially so that logs print cleanly one full line at a time.
-    - Simulation Control: stop_lock isolates writes made to the global shutdown flag (sim_stopped), ensuring all threads discover a termination status instantly.
-
-- pthread_cond_t (Condition Variables):
-    - Condition blocks (dongle->cond) keeps threads from aggressive polling. Instead of wasting processing cycles checking variables, threads calling pthread_cond_wait() drop their mutexes and sleep at 0% CPU footprint. They are awakened precisely when neighbor threads signal an availability change or a cooldown expiration via pthread_cond_broadcast().
-
-- Thread-Safe Communication Model:
-    When the monitor thread flags a burnout or verifies that all task compilation milestones are successfully reached, it locks stop_lock, changes sim_stopped = 1, and calls a broadcast function (wake_all_dongles) to transmit all sleeping condition gates. The sleeping coders immediately wake up, read the true system status, drop their local heap nodes, and cleanly close out their threads without leaks.
+Other Makefile rules:
+- `make clean` removes the object files.
+- `make fclean` also removes the executable.
+- `make re` rebuilds everything from scratch.
 
 ## Resources
--   POSIX Threads in OS: https://www.geeksforgeeks.org/operating-systems/posix-threads-in-os/
-*   AI Usage Description: AI was used as to optimize loop configurations, to understand how OS time affects multithreading, to verify binary min-heap array index equations (heapify_up / heapify_down), and help map mathematical tie-breaker priority formulas.
+
+- `man pthread_create`, `man pthread_mutex_lock`, `man pthread_cond_wait` — the
+  base documentation for everything used in this project.
+- The classic "Dining Philosophers" problem, since this project is basically a
+  variation of it.
+- General reading on deadlocks and the Coffman conditions, to understand what
+  causes them and how to avoid them.
+
+**How AI was used:** I used Claude (an AI assistant) mainly to help me
+understand my own code better and to catch bugs I couldn't find on my own,
+especially tricky timing bugs that only showed up sometimes. It helped me find
+and understand a deadlock caused by every coder always grabbing their left
+dongle before their right one, a bug where the simulation could hang forever
+after it was supposed to stop, and a subtle bug in my priority queue where the
+wrong entry could get removed from a dongle's waiting list, causing a coder to
+get stuck forever and burn out for no real reason. I also used it to check my
+code against the 42 Norm and to help me understand concepts like condition
+variables and heaps better through explanations and examples. I did not ask it
+to write my project for me — every fix suggested to me, I read through and
+tested myself before keeping it, and I made sure I could explain why each one
+was needed.
+
+## Blocking cases handled
+
+- **Deadlock prevention:** if every coder always grabbed their left dongle
+  first, then their right one, all coders could end up holding one dongle each
+  and waiting forever for the next one (this is the classic deadlock in this
+  kind of problem). To avoid it, each coder always tries to grab whichever of
+  their two dongles comes first in memory, no matter if it's their left or
+  right one. This breaks the circular waiting pattern.
+- **Starvation prevention:** dongles are handed out using a priority queue
+  (a heap), either in FIFO order (first come, first served) or EDF order
+  (whoever is closest to burning out goes first). This makes sure no coder
+  gets stuck waiting forever behind other coders.
+- **Cooldown handling:** every dongle remembers the time it was released, and
+  nobody can take it again until the cooldown time has passed.
+- **Precise burnout detection:** a separate monitor thread checks all coders
+  very often (every fraction of a millisecond) so that a burnout is detected
+  and logged almost immediately, well within the required time window.
+- **Log serialization:** all print statements go through the same mutex, so
+  two coders can never have their log lines mixed up together.
+
+## Thread synchronization mechanisms
+
+Each dongle has its own `pthread_mutex_t` and `pthread_cond_t`. The mutex
+protects the dongle's state (whether it's in use, its cooldown, its waiting
+list), and the condition variable is used so a coder can sleep while waiting
+for a dongle instead of wasting CPU time checking over and over.
+
+There are also two mutexes at the simulation level: one to protect all the
+`printf` calls so logs never overlap, and one to protect the "simulation
+stopped" flag (this one is also reused to protect the FIFO ticket counter).
+
+When a coder is done with a dongle, or when the simulation stops, the coder
+(or the monitor thread) broadcasts on the relevant condition variable(s) so
+that any thread sleeping and waiting wakes back up and checks again if it's
+their turn, or if the simulation is over.

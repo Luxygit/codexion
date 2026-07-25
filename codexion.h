@@ -75,10 +75,9 @@ typedef struct s_box
 
 int			ft_is_num(char *str);
 long long	ft_atoi_safe(char *str);
-int			validate_args(int ac, char **av);
+int			parse_args(t_box *box, int ac, char **av);
 
 int			init_data(t_box *box);
-int			parse_args(t_box *box, int ac, char **av);
 
 int			start_sim(t_box *box);
 void		*burnout_monitor(void *arg);
@@ -92,13 +91,12 @@ int			check_sim_status(t_box *box);
 int			all_coders_finished(t_box *box);
 
 void		push_heap(t_dongle *dongle, int coder_id, long long priority);
-void		pop_heap(t_dongle *dongle);
+void		pop_heap(t_dongle *dongle, int coder_id);
 
 void		coder_compile(t_coder *coder);
 void		coder_take_dongle(t_coder *coder, t_dongle *dongle);
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
-int			is_done_compiling(t_coder *coder);
 
 int			take_both_dongles(t_coder *coder);
 

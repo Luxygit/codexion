@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 10:55:31 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 18:46:09 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/25 21:59:43 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,11 +82,17 @@ void	push_heap(t_dongle *dongle, int coder_id, long long priority)
 	heapify_up(dongle, dongle->heap_size - 1);
 }
 
-void	pop_heap(t_dongle *dongle)
+void	pop_heap(t_dongle *dongle, int coder_id)
 {
-	if (dongle->heap_size == 0)
+	int	i;
+
+	i = 0;
+	while (i < dongle->heap_size && dongle->heap[i].coder_id != coder_id)
+		i++;
+	if (i >= dongle->heap_size)
 		return ;
-	dongle->heap[0] = dongle->heap[dongle->heap_size - 1];
+	dongle->heap[i] = dongle->heap[dongle->heap_size - 1];
 	dongle->heap_size--;
-	heapify_down(dongle, 0);
+	heapify_down(dongle, i);
+	heapify_up(dongle, i);
 }
