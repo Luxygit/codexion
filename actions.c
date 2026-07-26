@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/25 22:00:47 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/26 06:19:06 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,14 @@
 void	coder_compile(t_coder *coder)
 {
 	print_status(coder, "is compiling");
+	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->last_compile_time = get_time();
+	pthread_mutex_unlock(&coder->box->stop_lock);
 	ft_usleep(coder->rules->time_to_compile, coder->box);
+	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->comp_count++;
+	pthread_mutex_unlock(&coder->box->stop_lock);
+	all_coders_finished(coder->box);
 	pthread_mutex_lock(&coder->l_dongle->lock);
 	coder->l_dongle->in_use = 0;
 	coder->l_dongle->cooldown = get_time() + coder->rules->dongle_cooldown;
@@ -32,12 +37,16 @@ void	coder_compile(t_coder *coder)
 
 void	coder_debug(t_coder *coder)
 {
+	if (check_sim_status(coder->box))
+		return ;
 	print_status(coder, "is debugging");
 	ft_usleep(coder->rules->time_to_debug, coder->box);
 }
 
 void	coder_refactor(t_coder *coder)
 {
+	if (check_sim_status(coder->box))
+		return ;
 	print_status(coder, "is refactoring");
 	ft_usleep(coder->rules->time_to_refactor, coder->box);
 }

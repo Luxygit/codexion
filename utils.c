@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 11:50:29 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/26 06:18:26 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,22 +56,36 @@ void	print_status(t_coder *coder, char *status_msg)
 
 	box = coder->box;
 	pthread_mutex_lock(&box->print_lock);
-	if (!check_sim_status(box))
+	pthread_mutex_lock(&box->stop_lock);
+	if (!box->sim_stopped)
 	{
+		if ((strcmp(status_msg, "is debugging") == 0 || strcmp(status_msg,
+					"is refactoring") == 0)
+			&& coder->comp_count >= box->rules.num_compiles_required)
+		{
+			pthread_mutex_unlock(&box->stop_lock);
+			pthread_mutex_unlock(&box->print_lock);
+			return ;
+		}
 		relative_time = get_time() - box->start_time;
 		printf("%lld %d %s\n", relative_time, coder->id, status_msg);
 	}
+	pthread_mutex_unlock(&box->stop_lock);
 	pthread_mutex_unlock(&box->print_lock);
 }
 
 int	all_coders_finished(t_box *box)
 {
 	int	i;
+	int	done;
 
 	i = 0;
 	while (i < box->rules.num_coders)
 	{
-		if (box->coders[i].comp_count < box->rules.num_compiles_required)
+		pthread_mutex_lock(&box->stop_lock);
+		done = (box->coders[i].comp_count >= box->rules.num_compiles_required);
+		pthread_mutex_unlock(&box->stop_lock);
+		if (!done)
 			return (0);
 		i++;
 	}

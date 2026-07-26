@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/23 02:30:30 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/26 19:23:49 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ static int	check_num_bounds(char **av)
 			return (0);
 		}
 		val = ft_atoi_safe(av[i]);
-		if (val <= 0 || (i == 1 && val < 2))
+		if ((val <= 0 && i != 7)  || (i == 1 && val < 2))
 		{
 			write(2, "Error: Arguments must be positive (min 2 coders)\n", 50);
 			return (0);
@@ -81,6 +81,12 @@ static int	validate_args(int ac, char **av)
 	if (strcmp(av[8], "fifo") != 0 && strcmp(av[8], "edf") != 0)
 	{
 		write(2, "Error: Scheduler must be fifo or edf\n", 37);
+		return (0);
+	}
+	if (ft_atoi_safe(av[2]) < (ft_atoi_safe(av[3]) + ft_atoi_safe(av[4])
+			+ ft_atoi_safe(av[5]) + ft_atoi_safe(av[7])))
+	{
+		write(2, "Error: Burnout time less than compilation cycle\n", 48);
 		return (0);
 	}
 	return (1);

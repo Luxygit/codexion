@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/25 22:06:03 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/26 06:18:54 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,22 @@ void	*coder_routine(void *arg)
 	coder = (t_coder *)arg;
 	while (!check_sim_status(coder->box))
 	{
+		pthread_mutex_lock(&coder->box->stop_lock);
 		if (coder->comp_count >= coder->rules->num_compiles_required)
 		{
-			usleep(1000);
-			continue ;
+			pthread_mutex_unlock(&coder->box->stop_lock);
+			return (NULL);
 		}
+		pthread_mutex_unlock(&coder->box->stop_lock);
 		if (!take_both_dongles(coder))
 			continue ;
 		coder_compile(coder);
+		if (check_sim_status(coder->box))
+			break ;
 		coder_debug(coder);
+		if (check_sim_status(coder->box))
+			break ;
 		coder_refactor(coder);
-		usleep(1000);
 	}
 	return (NULL);
 }
@@ -75,10 +80,14 @@ void	wake_all_dongles(t_box *box)
 
 static int	coder_burned_out(t_box *box, int i)
 {
-	if (box->coders[i].comp_count >= box->rules.num_compiles_required)
-		return (0);
-	if (get_time() - box->coders[i].last_compile_time
-		<= box->rules.time_to_burnout)
+	int			done;
+	long long	last;
+
+	pthread_mutex_lock(&box->stop_lock);
+	done = (box->coders[i].comp_count >= box->rules.num_compiles_required);
+	last = box->coders[i].last_compile_time;
+	pthread_mutex_unlock(&box->stop_lock);
+	if (done || get_time() - last <= box->rules.time_to_burnout)
 		return (0);
 	print_status(&box->coders[i], "burned out");
 	pthread_mutex_lock(&box->stop_lock);
@@ -104,7 +113,7 @@ void	*burnout_monitor(void *arg)
 			if (coder_burned_out(box, i))
 				return (NULL);
 		}
-		usleep(200);
+		usleep(5);
 	}
 	return (NULL);
 }
