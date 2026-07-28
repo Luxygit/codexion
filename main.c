@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:15:25 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:39:17 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ int	init_data(t_box *box)
 	{
 		pthread_mutex_init(&box->dongles[i].lock, NULL);
 		pthread_cond_init(&box->dongles[i].cond, NULL);
+		box->dongles[i].heap = NULL;
 		box->coders[i].id = i + 1;
 		box->coders[i].comp_count = 0;
 		box->coders[i].rules = &box->rules;
@@ -69,7 +70,8 @@ void	free_all(t_box *box)
 			pthread_cond_broadcast(&box->dongles[i].cond);
 			pthread_mutex_destroy(&box->dongles[i].lock);
 			pthread_cond_destroy(&box->dongles[i].cond);
-			free(box->dongles[i].heap);
+			if (box->dongles[i].heap)
+				free(box->dongles[i].heap);
 			i++;
 		}
 	}
@@ -105,5 +107,6 @@ int	main(int ac, char **av)
 		return (1);
 	}
 	start_sim(&box);
+	free_all(&box);
 	return (0);
 }
