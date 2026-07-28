@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:16:15 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:26:54 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,18 @@
 
 static long long	get_priority(t_coder *coder)
 {
-	long long	priority;
+	long long	deadline;
 
 	pthread_mutex_lock(&coder->box->stop_lock);
 	if (coder->box->rules.is_edf)
 	{
-		priority = coder->last_compile_time
+		deadline = coder->last_compile_time
 			+ coder->box->rules.time_to_burnout;
 	}
 	else
-		priority = coder->box->ticket_counter++;
+		deadline = coder->box->ticket_counter++;
 	pthread_mutex_unlock(&coder->box->stop_lock);
-	return (priority);
+	return (deadline);
 }
 
 static void	wait_cooldown(t_dongle *dongle, t_box *box)
@@ -57,7 +57,9 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
+	pop_heap(dongle, coder->id);
 	dongle->in_use = 1;
+	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 	return (1);
 }

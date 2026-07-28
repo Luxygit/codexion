@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 15:45:16 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:27:33 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,7 @@ void	coder_refactor(t_coder *coder)
 
 void	coder_take_dongle(t_coder *coder, t_dongle *dongle)
 {
-	pthread_mutex_lock(&dongle->lock);
-	pop_heap(dongle, coder->id);
-	pthread_cond_broadcast(&dongle->cond);
-	pthread_mutex_unlock(&dongle->lock);
+	(void)dongle;
 	print_status(coder, "has taken a dongle");
 }
 
