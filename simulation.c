@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 13:23:09 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:09:07 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,8 @@ void	*coder_routine(void *arg)
 		}
 		if (!take_both_dongles(coder))
 			continue ;
-		if (check_sim_status(coder->box))
-			break ;
 		coder_compile(coder);
-		if (check_sim_status(coder->box))
-			break ;
 		coder_debug(coder);
-		if (check_sim_status(coder->box))
-			break ;
 		coder_refactor(coder);
 	}
 	return (NULL);

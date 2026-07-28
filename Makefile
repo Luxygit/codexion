@@ -6,13 +6,13 @@
 #    By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/07/21 14:29:56 by dievarga          #+#    #+#              #
-#    Updated: 2026/07/28 13:11:51 by dievarga         ###   ########.fr        #
+#    Updated: 2026/07/28 15:45:26 by dievarga         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	codexion
 CC		=	cc
-CFLAGS	=	-Wall -Werror -Wextra -pthread
+CFLAGS	=	-Wall -Werror -Wextra -pthread -Fsanitize=thread
 SRCS	=	main.c parsing.c simulation.c queue.c actions.c arbitration.c utils.c
 OBJS	=	$(SRCS:.c=.o)
 HEADER	=	codexion.h

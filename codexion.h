@@ -41,7 +41,8 @@ typedef struct s_heap_node
 typedef struct s_dongle
 {
 	int				in_use;
-	long long		cooldown;
+	long long		cooldown_duration;
+	long long		available_at;
 	pthread_mutex_t	lock;
 	pthread_cond_t	cond;
 	t_heap_node		*heap;
@@ -100,5 +101,6 @@ void		coder_refactor(t_coder *coder);
 
 int			take_both_dongles(t_coder *coder);
 int			coder_has_finished(t_coder *coder);
+void		release_dongle(t_dongle *dongle, int coder_id);
 
 #endif

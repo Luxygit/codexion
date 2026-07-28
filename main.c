@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/26 06:34:17 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:15:25 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,8 @@ int	init_data(t_box *box)
 			% box->rules.num_coders];
 		box->coders[i].l_dongle = &box->dongles[i];
 		box->dongles[i].in_use = 0;
-		box->dongles[i].cooldown = 0;
+		box->dongles[i].cooldown_duration = box->rules.dongle_cooldown;
+		box->dongles[i].available_at = 0;
 	}
 	pthread_mutex_init(&box->print_lock, NULL);
 	pthread_mutex_init(&box->stop_lock, NULL);
@@ -89,13 +90,20 @@ int	main(int ac, char **av)
 	box.threads = malloc(sizeof(pthread_t) * box.rules.num_coders);
 	box.coders = malloc(sizeof(t_coder) * box.rules.num_coders);
 	box.dongles = malloc(sizeof(t_dongle) * box.rules.num_coders);
-	if (!box.coders || !box.dongles || !box.threads || !init_data(&box))
+	if (!box.coders || !box.dongles || !box.threads)
+	{
+		free(box.threads);
+		free(box.coders);
+		free(box.dongles);
+		write(2, "Error: Setup failed\n", 21);
+		return (1);
+	}
+	if (!init_data(&box))
 	{
 		free_all(&box);
 		write(2, "Error: Setup failed\n", 21);
 		return (1);
 	}
 	start_sim(&box);
-	free_all(&box);
 	return (0);
 }

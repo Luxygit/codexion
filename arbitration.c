@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/26 19:47:28 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 16:16:15 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ static long long	get_priority(t_coder *coder)
 
 static void	wait_cooldown(t_dongle *dongle, t_box *box)
 {
-	while (get_time() < dongle->cooldown && !check_sim_status(box))
+	while (get_time() < dongle->available_at && !check_sim_status(box))
 	{
 		pthread_mutex_unlock(&dongle->lock);
 		usleep(50);
@@ -62,10 +62,12 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 	return (1);
 }
 
-static void	release_dongle(t_dongle *dongle)
+void	release_dongle(t_dongle *dongle, int coder_id)
 {
 	pthread_mutex_lock(&dongle->lock);
+	pop_heap(dongle, coder_id);
 	dongle->in_use = 0;
+	dongle->available_at = get_time() + dongle->cooldown_duration;
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 }
@@ -91,7 +93,7 @@ int	take_both_dongles(t_coder *coder)
 		return (0);
 	if (!check_and_lock(second, coder))
 	{
-		release_dongle(first);
+		release_dongle(first, coder->id);
 		return (0);
 	}
 	coder_take_dongle(coder, coder->l_dongle);

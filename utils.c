@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 18:09:24 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 13:12:59 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 15:38:39 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,18 +69,16 @@ int	all_coders_finished(t_box *box)
 	int	i;
 
 	i = 0;
+	pthread_mutex_lock(&box->stop_lock);
 	while (i < box->rules.num_coders)
 	{
-		pthread_mutex_lock(&box->stop_lock);
 		if (box->coders[i].comp_count < box->rules.num_compiles_required)
 		{
 			pthread_mutex_unlock(&box->stop_lock);
 			return (0);
 		}
-		pthread_mutex_unlock(&box->stop_lock);
 		i++;
 	}
-	pthread_mutex_lock(&box->stop_lock);
 	box->sim_stopped = 1;
 	pthread_mutex_unlock(&box->stop_lock);
 	wake_all_dongles(box);
