@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/26 05:44:19 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/26 19:47:28 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,14 @@ int	take_both_dongles(t_coder *coder)
 	t_dongle	*first;
 	t_dongle	*second;
 
-	if (coder->l_dongle < coder->r_dongle)
+	if (coder->rules->num_coders == 1)
 	{
-		first = coder->l_dongle;
-		second = coder->r_dongle;
+		ft_usleep(coder->rules->time_to_burnout + 10, coder->box);
+		return (0);
 	}
-	else
+	first = coder->l_dongle;
+	second = coder->r_dongle;
+	if (coder->l_dongle > coder->r_dongle)
 	{
 		first = coder->r_dongle;
 		second = coder->l_dongle;

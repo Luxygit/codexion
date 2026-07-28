@@ -99,5 +99,6 @@ void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
 
 int			take_both_dongles(t_coder *coder);
+int			coder_has_finished(t_coder *coder);
 
 #endif

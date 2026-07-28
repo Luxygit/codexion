@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/26 06:18:54 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 13:23:09 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,15 @@ void	*coder_routine(void *arg)
 	coder = (t_coder *)arg;
 	while (!check_sim_status(coder->box))
 	{
-		pthread_mutex_lock(&coder->box->stop_lock);
-		if (coder->comp_count >= coder->rules->num_compiles_required)
+		if (coder_has_finished(coder))
 		{
-			pthread_mutex_unlock(&coder->box->stop_lock);
-			return (NULL);
+			usleep(50);
+			continue ;
 		}
-		pthread_mutex_unlock(&coder->box->stop_lock);
 		if (!take_both_dongles(coder))
 			continue ;
+		if (check_sim_status(coder->box))
+			break ;
 		coder_compile(coder);
 		if (check_sim_status(coder->box))
 			break ;

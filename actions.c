@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/26 06:19:06 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/28 13:23:26 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ void	coder_compile(t_coder *coder)
 	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->comp_count++;
 	pthread_mutex_unlock(&coder->box->stop_lock);
-	all_coders_finished(coder->box);
 	pthread_mutex_lock(&coder->l_dongle->lock);
 	coder->l_dongle->in_use = 0;
 	coder->l_dongle->cooldown = get_time() + coder->rules->dongle_cooldown;
@@ -33,6 +32,7 @@ void	coder_compile(t_coder *coder)
 	coder->r_dongle->cooldown = get_time() + coder->rules->dongle_cooldown;
 	pthread_cond_broadcast(&coder->r_dongle->cond);
 	pthread_mutex_unlock(&coder->r_dongle->lock);
+	all_coders_finished(coder->box);
 }
 
 void	coder_debug(t_coder *coder)
@@ -58,4 +58,14 @@ void	coder_take_dongle(t_coder *coder, t_dongle *dongle)
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 	print_status(coder, "has taken a dongle");
+}
+
+int	coder_has_finished(t_coder *coder)
+{
+	int	finished;
+
+	pthread_mutex_lock(&coder->box->stop_lock);
+	finished = (coder->comp_count >= coder->rules->num_compiles_required);
+	pthread_mutex_unlock(&coder->box->stop_lock);
+	return (finished);
 }
