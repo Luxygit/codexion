@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:27:33 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 11:22:40 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,16 @@ void	coder_compile(t_coder *coder)
 	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->comp_count++;
 	pthread_mutex_unlock(&coder->box->stop_lock);
+	if (coder->l_dongle < coder->r_dongle)
+	{
+		release_dongle(coder->l_dongle);
+		release_dongle(coder->r_dongle);
+	}
+	else
+	{
+		release_dongle(coder->r_dongle);
+		release_dongle(coder->l_dongle);
+	}
 }
 
 void	coder_debug(t_coder *coder)
@@ -34,21 +44,10 @@ void	coder_debug(t_coder *coder)
 
 void	coder_refactor(t_coder *coder)
 {
-	if (!check_sim_status(coder->box) && !all_coders_finished(coder->box))
-	{
-		print_status(coder, "is refactoring");
-		ft_usleep(coder->rules->time_to_refactor, coder->box);
-	}
-	if (coder->l_dongle < coder->r_dongle)
-	{
-		release_dongle(coder->l_dongle, coder->id);
-		release_dongle(coder->r_dongle, coder->id);
-	}
-	else
-	{
-		release_dongle(coder->r_dongle, coder->id);
-		release_dongle(coder->l_dongle, coder->id);
-	}
+	if (check_sim_status(coder->box))
+		return ;
+	print_status(coder, "is refactoring");
+	ft_usleep(coder->rules->time_to_refactor, coder->box);
 }
 
 void	coder_take_dongle(t_coder *coder, t_dongle *dongle)

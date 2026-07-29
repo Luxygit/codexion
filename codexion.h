@@ -101,6 +101,6 @@ void		coder_refactor(t_coder *coder);
 
 int			take_both_dongles(t_coder *coder);
 int			coder_has_finished(t_coder *coder);
-void		release_dongle(t_dongle *dongle, int coder_id);
+void		release_dongle(t_dongle *dongle);
 
 #endif

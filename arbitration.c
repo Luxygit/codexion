@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:26:54 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 11:21:56 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,10 +64,9 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder)
 	return (1);
 }
 
-void	release_dongle(t_dongle *dongle, int coder_id)
+void	release_dongle(t_dongle *dongle)
 {
 	pthread_mutex_lock(&dongle->lock);
-	pop_heap(dongle, coder_id);
 	dongle->in_use = 0;
 	dongle->available_at = get_time() + dongle->cooldown_duration;
 	pthread_cond_broadcast(&dongle->cond);
@@ -95,7 +94,7 @@ int	take_both_dongles(t_coder *coder)
 		return (0);
 	if (!check_and_lock(second, coder))
 	{
-		release_dongle(first, coder->id);
+		release_dongle(first);
 		return (0);
 	}
 	coder_take_dongle(coder, coder->l_dongle);
