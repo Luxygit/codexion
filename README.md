@@ -2,8 +2,7 @@
 
 ## Description
 
-Codexion is a multithreaded simulation project written in C. It is basically the
-"dining philosophers" problem but reskinned: instead of philosophers and forks,
+Codexion is a multithreaded simulation project written in C. In this project
 we have coders who need two USB dongles to compile their code. Each coder sits
 in a circle and shares one dongle with the coder on their left and one with the
 coder on their right.

@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 10:11:23 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:39:17 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 15:13:26 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ int	init_data(t_box *box)
 		box->dongles[i].in_use = 0;
 		box->dongles[i].cooldown_duration = box->rules.dongle_cooldown;
 		box->dongles[i].available_at = 0;
+		box->coders[i].request_prio = -1;
 	}
 	pthread_mutex_init(&box->print_lock, NULL);
 	pthread_mutex_init(&box->stop_lock, NULL);

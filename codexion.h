@@ -55,6 +55,7 @@ typedef struct s_coder
 	int				id;
 	int				comp_count;
 	long long		last_compile_time;
+	long long		request_prio;
 	t_rules			*rules;
 	struct s_box	*box;
 	t_dongle		*l_dongle;
@@ -95,7 +96,8 @@ void		push_heap(t_dongle *dongle, int coder_id, long long priority);
 void		pop_heap(t_dongle *dongle, int coder_id);
 
 void		coder_compile(t_coder *coder);
-void		coder_take_dongle(t_coder *coder, t_dongle *dongle);
+void		print_both_dongles(t_coder *coder);
+
 void		coder_debug(t_coder *coder);
 void		coder_refactor(t_coder *coder);
 

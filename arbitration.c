@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/29 11:21:56 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 14:46:51 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,51 +14,59 @@
 
 static long long	get_priority(t_coder *coder)
 {
-	long long	deadline;
+	long long	prio;
 
 	pthread_mutex_lock(&coder->box->stop_lock);
 	if (coder->box->rules.is_edf)
-	{
-		deadline = coder->last_compile_time
-			+ coder->box->rules.time_to_burnout;
-	}
+		prio = coder->last_compile_time + coder->box->rules.time_to_burnout;
+	else if (coder->request_prio >= 0)
+		prio = coder->request_prio;
 	else
-		deadline = coder->box->ticket_counter++;
-	pthread_mutex_unlock(&coder->box->stop_lock);
-	return (deadline);
-}
-
-static void	wait_cooldown(t_dongle *dongle, t_box *box)
-{
-	while (get_time() < dongle->available_at && !check_sim_status(box))
 	{
-		pthread_mutex_unlock(&dongle->lock);
-		usleep(50);
-		pthread_mutex_lock(&dongle->lock);
+		prio = coder->box->ticket_counter;
+		coder->box->ticket_counter++;
+		coder->request_prio = prio;
 	}
+	pthread_mutex_unlock(&coder->box->stop_lock);
+	return (prio);
 }
 
-static int	check_and_lock(t_dongle *dongle, t_coder *coder)
+static int	dongle_busy(t_dongle *dongle, int coder_id)
 {
-	long long	priority;
+	if (dongle->in_use)
+		return (1);
+	if (get_time() < dongle->available_at)
+		return (1);
+	if (dongle->heap_size > 0 && dongle->heap[0].coder_id != coder_id)
+		return (1);
+	return (0);
+}
 
+static int	check_and_lock(t_dongle *dongle, t_coder *coder, long long prio,
+		int can_wait)
+{
 	pthread_mutex_lock(&dongle->lock);
-	wait_cooldown(dongle, coder->box);
-	priority = get_priority(coder);
-	push_heap(dongle, coder->id, priority);
-	while (!check_sim_status(coder->box) && ((dongle->heap_size > 0
-				&& dongle->heap[0].coder_id != coder->id)
-			|| dongle->in_use == 1))
+	push_heap(dongle, coder->id, prio);
+	while (can_wait && !check_sim_status(coder->box)
+		&& dongle_busy(dongle, coder->id))
 	{
+		if (get_time() < dongle->available_at)
+		{
+			pthread_mutex_unlock(&dongle->lock);
+			usleep(50);
+			pthread_mutex_lock(&dongle->lock);
+			continue ;
+		}
 		pthread_cond_wait(&dongle->cond, &dongle->lock);
 	}
-	if (check_sim_status(coder->box))
+	if (check_sim_status(coder->box) || dongle_busy(dongle, coder->id))
 	{
+		pop_heap(dongle, coder->id);
 		pthread_mutex_unlock(&dongle->lock);
 		return (0);
 	}
-	pop_heap(dongle, coder->id);
 	dongle->in_use = 1;
+	pop_heap(dongle, coder->id);
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->lock);
 	return (1);
@@ -77,12 +85,11 @@ int	take_both_dongles(t_coder *coder)
 {
 	t_dongle	*first;
 	t_dongle	*second;
+	long long	prio;
 
 	if (coder->rules->num_coders == 1)
-	{
-		ft_usleep(coder->rules->time_to_burnout + 10, coder->box);
 		return (0);
-	}
+	prio = get_priority(coder);
 	first = coder->l_dongle;
 	second = coder->r_dongle;
 	if (coder->l_dongle > coder->r_dongle)
@@ -90,14 +97,13 @@ int	take_both_dongles(t_coder *coder)
 		first = coder->r_dongle;
 		second = coder->l_dongle;
 	}
-	if (!check_and_lock(first, coder))
+	if (!check_and_lock(first, coder, prio, 1))
 		return (0);
-	if (!check_and_lock(second, coder))
+	if (!check_and_lock(second, coder, prio, 0))
 	{
 		release_dongle(first);
 		return (0);
 	}
-	coder_take_dongle(coder, coder->l_dongle);
-	coder_take_dongle(coder, coder->r_dongle);
+	print_both_dongles(coder);
 	return (1);
 }

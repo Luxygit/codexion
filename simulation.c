@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 17:54:37 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 16:09:07 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 14:09:12 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,14 @@ void	*coder_routine(void *arg)
 	{
 		if (coder_has_finished(coder))
 		{
-			usleep(50);
+			usleep(5);
 			continue ;
 		}
 		if (!take_both_dongles(coder))
+		{
+			usleep(100);
 			continue ;
+		}
 		coder_compile(coder);
 		coder_debug(coder);
 		coder_refactor(coder);
@@ -107,7 +110,7 @@ void	*burnout_monitor(void *arg)
 			if (coder_burned_out(box, i))
 				return (NULL);
 		}
-		usleep(5);
+		usleep(1);
 	}
 	return (NULL);
 }

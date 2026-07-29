@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/29 11:22:40 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/29 14:47:16 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,9 @@ void	coder_compile(t_coder *coder)
 	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->comp_count++;
 	pthread_mutex_unlock(&coder->box->stop_lock);
-	if (coder->l_dongle < coder->r_dongle)
+	if (coder->l_dongle == coder->r_dongle)
+		release_dongle(coder->l_dongle);
+	else if (coder->l_dongle < coder->r_dongle)
 	{
 		release_dongle(coder->l_dongle);
 		release_dongle(coder->r_dongle);
@@ -50,10 +52,23 @@ void	coder_refactor(t_coder *coder)
 	ft_usleep(coder->rules->time_to_refactor, coder->box);
 }
 
-void	coder_take_dongle(t_coder *coder, t_dongle *dongle)
+void	print_both_dongles(t_coder *coder)
 {
-	(void)dongle;
-	print_status(coder, "has taken a dongle");
+	long long	relative_time;
+	t_box		*box;
+
+	box = coder->box;
+	pthread_mutex_lock(&box->print_lock);
+	pthread_mutex_lock(&box->stop_lock);
+	if (!box->sim_stopped)
+	{
+		relative_time = get_time() - box->start_time;
+		printf("%lld %d has taken a dongle\n", relative_time, coder->id);
+		printf("%lld %d has taken a dongle\n", relative_time, coder->id);
+	}
+	coder->request_prio = -1;
+	pthread_mutex_unlock(&box->stop_lock);
+	pthread_mutex_unlock(&box->print_lock);
 }
 
 int	coder_has_finished(t_coder *coder)
