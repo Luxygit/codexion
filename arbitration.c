@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/29 14:46:51 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/07/30 00:08:48 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,11 @@ static int	dongle_busy(t_dongle *dongle, int coder_id)
 	return (0);
 }
 
-static int	check_and_lock(t_dongle *dongle, t_coder *coder, long long prio,
-		int can_wait)
+static int	check_and_lock(t_dongle *dongle, t_coder *coder, long long prio)
 {
 	pthread_mutex_lock(&dongle->lock);
 	push_heap(dongle, coder->id, prio);
-	while (can_wait && !check_sim_status(coder->box)
+	while (!check_sim_status(coder->box)
 		&& dongle_busy(dongle, coder->id))
 	{
 		if (get_time() < dongle->available_at)
@@ -97,9 +96,9 @@ int	take_both_dongles(t_coder *coder)
 		first = coder->r_dongle;
 		second = coder->l_dongle;
 	}
-	if (!check_and_lock(first, coder, prio, 1))
+	if (!check_and_lock(first, coder, prio))
 		return (0);
-	if (!check_and_lock(second, coder, prio, 0))
+	if (!check_and_lock(second, coder, prio))
 	{
 		release_dongle(first);
 		return (0);
