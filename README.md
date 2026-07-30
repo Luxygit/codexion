@@ -33,8 +33,7 @@ Example:
 ```
 
 - `scheduler` must be either `fifo` or `edf`.
-- All the numeric arguments must be positive whole numbers, and `number_of_coders`
-  must be at least 2.
+- All the numeric arguments must be positive whole numbers.
 
 Other Makefile rules:
 - `make clean` removes the object files.
@@ -45,31 +44,25 @@ Other Makefile rules:
 
 - `man pthread_create`, `man pthread_mutex_lock`, `man pthread_cond_wait` — the
   base documentation for everything used in this project.
-- The classic "Dining Philosophers" problem, since this project is basically a
-  variation of it.
 - General reading on deadlocks and the Coffman conditions, to understand what
   causes them and how to avoid them.
 
-**How AI was used:** I used Claude (an AI assistant) mainly to help me
-understand my own code better and to catch bugs I couldn't find on my own,
-especially tricky timing bugs that only showed up sometimes. It helped me find
+## How AI was used:
+I used Claude mainly to help me understand the man documentation and to catch
+bugs I couldn't find on my own.
+Specially tricky timing bugs that only showed up sometimes. It helped me find
 and understand a deadlock caused by every coder always grabbing their left
 dongle before their right one, a bug where the simulation could hang forever
 after it was supposed to stop, and a subtle bug in my priority queue where the
 wrong entry could get removed from a dongle's waiting list, causing a coder to
-get stuck forever and burn out for no real reason. I also used it to check my
-code against the 42 Norm and to help me understand concepts like condition
-variables and heaps better through explanations and examples. I did not ask it
-to write my project for me — every fix suggested to me, I read through and
-tested myself before keeping it, and I made sure I could explain why each one
-was needed.
+get stuck forever and burn out for no real reason.
 
 ## Blocking cases handled
 
 - **Deadlock prevention:** if every coder always grabbed their left dongle
   first, then their right one, all coders could end up holding one dongle each
-  and waiting forever for the next one (this is the classic deadlock in this
-  kind of problem). To avoid it, each coder always tries to grab whichever of
+  and waiting forever for the next one (this is the classic deadlock). 
+  To avoid it, each coder always tries to grab whichever of
   their two dongles comes first in memory, no matter if it's their left or
   right one. This breaks the circular waiting pattern.
 - **Starvation prevention:** dongles are handed out using a priority queue
@@ -96,6 +89,6 @@ There are also two mutexes at the simulation level: one to protect all the
 stopped" flag (this one is also reused to protect the FIFO ticket counter).
 
 When a coder is done with a dongle, or when the simulation stops, the coder
-(or the monitor thread) broadcasts on the relevant condition variable(s) so
+(or the monitor thread) broadcasts on the condition variable(s) so
 that any thread sleeping and waiting wakes back up and checks again if it's
 their turn, or if the simulation is over.
