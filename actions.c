@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:09:59 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/30 09:03:04 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/08/10 02:51:45 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ void	coder_compile(t_coder *coder)
 	pthread_mutex_lock(&coder->box->stop_lock);
 	coder->comp_count++;
 	pthread_mutex_unlock(&coder->box->stop_lock);
-	else if (coder->l_dongle < coder->r_dongle)
+	if (coder->l_dongle < coder->r_dongle)
 	{
 		release_dongle(coder->l_dongle);
 		release_dongle(coder->r_dongle);

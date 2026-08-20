@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 11:29:20 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/30 00:08:48 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/08/20 21:30:40 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,9 +54,9 @@ static int	check_and_lock(t_dongle *dongle, t_coder *coder, long long prio)
 			pthread_mutex_unlock(&dongle->lock);
 			usleep(50);
 			pthread_mutex_lock(&dongle->lock);
-			continue ;
 		}
-		pthread_cond_wait(&dongle->cond, &dongle->lock);
+		else
+			pthread_cond_wait(&dongle->cond, &dongle->lock);
 	}
 	if (check_sim_status(coder->box) || dongle_busy(dongle, coder->id))
 	{
