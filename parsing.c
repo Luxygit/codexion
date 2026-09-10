@@ -6,7 +6,7 @@
 /*   By: dievarga <dievarga@student.42barcelona.co  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/21 13:27:39 by dievarga          #+#    #+#             */
-/*   Updated: 2026/07/28 12:22:18 by dievarga         ###   ########.fr       */
+/*   Updated: 2026/08/26 10:21:32 by dievarga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,12 @@ static int	check_num_bounds(char **av)
 		val = ft_atoi_safe(av[i]);
 		if (val <= 0)
 		{
-			write(2, "Error: Arguments must be positive (min 1 coders)\n", 50);
+			write(2, "Error: Arguments must be positive\n", 34);
+			return (0);
+		}
+		if (i == 1 && val > 200)
+		{
+			write(2, "Error: Coder count must be between 1 and 200\n", 45);
 			return (0);
 		}
 		i++;

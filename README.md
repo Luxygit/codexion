@@ -34,6 +34,7 @@ Example:
 
 - `scheduler` must be either `fifo` or `edf`.
 - All the numeric arguments must be positive whole numbers.
+- Maximum number of coders is 200, because of system memory restrictions.
 
 Other Makefile rules:
 - `make clean` removes the object files.
@@ -61,16 +62,17 @@ get stuck forever and burn out for no real reason.
 
 - **Deadlock prevention:** if every coder always grabbed their left dongle
   first, then their right one, all coders could end up holding one dongle each
-  and waiting forever for the next one (this is the classic deadlock). 
+  and waiting forever for the next one (this is the classic circular wait,
+  hold/wait deadlock). 
   To avoid it, each coder always tries to grab whichever of
   their two dongles comes first in memory, no matter if it's their left or
   right one. This breaks the circular waiting pattern.
 - **Starvation prevention:** dongles are handed out using a priority queue
   (a heap), either in FIFO order (first come, first served) or EDF order
   (whoever is closest to burning out goes first). This makes sure no coder
-  gets stuck waiting forever behind other coders.
+  gets stuck waiting forever behind other coders (mutual exclusion).
 - **Cooldown handling:** every dongle remembers the time it was released, and
-  nobody can take it again until the cooldown time has passed.
+  nobody can take it again until the cooldown time has passed (preemption).
 - **Precise burnout detection:** a separate monitor thread checks all coders
   very often (every fraction of a millisecond) so that a burnout is detected
   and logged almost immediately, well within the required time window.
